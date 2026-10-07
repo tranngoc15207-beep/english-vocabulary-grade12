@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocabulary 12 — AI Quiz</title>
+<style>
+:root{--blue:#5b8def;--green:#22a06b;--red:#e05252;--ink:#24324a;--muted:#6f7b8f;--bg:#f4f7fb}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#eef5ff,#f8fbff);color:var(--ink)}
+.app{max-width:760px;margin:auto;padding:22px 16px 50px}.top{text-align:center;margin-bottom:18px}
+h1{margin:5px 0 4px;font-size:29px}.sub{color:var(--muted);font-size:14px}
+.panel,.card{background:#fff;border:1px solid #e4eaf3;border-radius:22px;box-shadow:0 10px 30px rgba(35,58,95,.08)}
+.panel{padding:14px 16px;margin-bottom:14px}.stats{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.progress{height:8px;background:#edf1f7;border-radius:20px;margin-top:11px;overflow:hidden}.bar{height:100%;width:0;background:var(--blue);transition:.25s}
+.card{padding:30px 22px}.label{text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-size:12px}
+.word{font-size:44px;font-weight:800;text-align:center;margin:24px 0 8px;word-break:break-word}.listen{text-align:center}
+button{font:inherit;border:0;cursor:pointer}.speaker{border:1px solid #dce5f4;background:#f7faff;border-radius:14px;padding:9px 14px;color:#315da8;font-weight:700}
+.question{text-align:center;margin:22px 0 15px;font-weight:700}.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.answer{padding:16px;border:2px solid #e2e8f1;background:#fff;border-radius:15px;text-align:left;font-weight:650;transition:.15s}.answer:hover:not(:disabled){border-color:#91b0ef;background:#f6f9ff}.answer.correct{border-color:var(--green);background:#eaf9f1;color:#15754d}.answer.wrong{border-color:var(--red);background:#fff0f0;color:#a52f2f}.answer:disabled{cursor:default}
+.result{display:none;margin-top:18px;padding:16px;border-radius:15px;background:#f7f9fc}.ipa{font-size:19px;font-weight:750;color:#315da8}.meaning{font-size:17px;margin-top:5px}
+.actions{display:flex;gap:10px;margin-top:18px}.next,.restart{flex:1;padding:14px;border-radius:14px;font-weight:750}.next{background:var(--blue);color:#fff}.restart{background:#eef2f8;color:#33445f}
+.finish{display:none;text-align:center;padding:15px}.finish h2{margin:5px 0}.scorebig{font-size:46px;font-weight:850}
+.note{margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+@media(max-width:560px){.answers{grid-template-columns:1fr}.word{font-size:36px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div style="font-size:13px;font-weight:800;color:#4c73bf">ENGLISH VOCABULARY • GRADE 12</div>
+    <h1>🎯 Vocabulary Quiz</h1>
+    <div class="sub">Chọn nghĩa tiếng Việt → hiện phiên âm → nghe phát âm</div>
+  </div>
+
+  <div class="panel">
+    <div class="stats"><span id="progressText">Câu 1 / 1</span><span>Điểm: <b id="score">0</b></span></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <div class="card" id="quiz">
+    <div class="label">Từ vựng</div>
+    <div class="word" id="word">—</div>
+    <div class="listen"><button class="speaker" id="speakBtn">🔊 Nghe phát âm</button></div>
+    <div class="question">Nghĩa tiếng Việt của từ trên là gì?</div>
+    <div class="answers" id="answers"></div>
+    <div class="result" id="result">
+      <div>Phiên âm: <span class="ipa" id="ipa"></span></div>
+      <div class="meaning" id="meaning"></div>
+      <div style="margin-top:10px;color:#617089;font-size:13px">💡 Bạn có thể bấm loa để nghe lại.</div>
+    </div>
+    <div class="actions">
+      <button class="restart" id="restart">↻ Làm lại</button>
+      <button class="next" id="next" disabled>Câu tiếp theo →</button>
+    </div>
+  </div>
+
+  <div class="finish" id="finish">
+    <div class="panel">
+      <div style="font-size:42px">🎉</div>
+      <h2>Hoàn thành!</h2>
+      <div class="scorebig" id="finalScore">0/0</div>
+      <p id="finalText"></p>
+      <button class="next" onclick="start()">Học lại lượt mới</button>
+    </div>
+  </div>
+
+  <div class="note">
+    Dữ liệu từ vựng được lấy từ tài liệu PDF bạn cung cấp. Vì PDF là bản scan, các mục OCR không đủ rõ được bỏ qua để tránh đưa từ/nghĩa sai vào bài học.
+    <br>Âm thanh dùng Speech Synthesis của trình duyệt, nên không cần tải file âm thanh riêng.
+  </div>
+</div>
+
+<script>
+const BANK = [{"word": "credit card", "ipa": "/ˈkredɪt kɑːrd/", "meaning": "thẻ tín dụng"}, {"word": "sightseeing", "ipa": "/ˈsaɪtˌsiːɪŋ/", "meaning": "tham quan"}, {"word": "room service", "ipa": "/ˈruːm ˌsɜːrvɪs/", "meaning": "dịch vụ phòng"}, {"word": "establish", "ipa": "/ɪˈstæblɪʃ/", "meaning": "thiết lập"}, {"word": "homestay", "ipa": "/ˈhoʊmsteɪ/", "meaning": "nhà ở homestay"}, {"word": "college", "ipa": "/ˈkɑːlɪdʒ/", "meaning": "trường cao đẳng"}, {"word": "field", "ipa": "/fiːld/", "meaning": "lĩnh vực; cánh đồng"}, {"word": "network", "ipa": "/ˈnetwɜːrk/", "meaning": "mạng lưới; kết nối"}, {"word": "inspiring", "ipa": "/ɪnˈspaɪərɪŋ/", "meaning": "truyền cảm hứng"}, {"word": "struggle", "ipa": "/ˈstrʌɡəl/", "meaning": "đấu tranh"}, {"word": "motivation", "ipa": "/ˌmoʊtɪˈveɪʃən/", "meaning": "động lực; sự thúc đẩy"}, {"word": "pursue", "ipa": "/pərˈsuː/", "meaning": "theo đuổi"}, {"word": "suggest", "ipa": "/səˈdʒest/", "meaning": "đề nghị; gợi ý"}, {"word": "adaptable", "ipa": "/əˈdæptəbəl/", "meaning": "có thể thích nghi; linh hoạt"}, {"word": "pace", "ipa": "/peɪs/", "meaning": "nhịp độ; tốc độ"}, {"word": "requirement", "ipa": "/rɪˈkwaɪərmənt/", "meaning": "yêu cầu; sự đòi hỏi"}, {"word": "training", "ipa": "/ˈtreɪnɪŋ/", "meaning": "đào tạo; huấn luyện"}, {"word": "currency", "ipa": "/ˈkɜːrənsi/", "meaning": "tiền tệ"}, {"word": "promotion", "ipa": "/prəˈmoʊʃən/", "meaning": "sự thăng tiến; khuyến mãi"}, {"word": "complex", "ipa": "/ˈkɑːmpleks/", "meaning": "phức tạp"}, {"word": "film", "ipa": "/fɪlm/", "meaning": "phim"}, {"word": "demanding", "ipa": "/dɪˈmændɪŋ/", "meaning": "đòi hỏi cao; khắt khe"}, {"word": "situation", "ipa": "/ˌsɪtʃuˈeɪʃən/", "meaning": "tình huống; hoàn cảnh"}, {"word": "professionalism", "ipa": "/prəˈfeʃənəlɪzəm/", "meaning": "sự chuyên nghiệp"}, {"word": "demeanour", "ipa": "/dɪˈmiːnər/", "meaning": "thái độ; phong thái"}, {"word": "discreet", "ipa": "/dɪˈskriːt/", "meaning": "kín đáo; thận trọng"}, {"word": "patent", "ipa": "/ˈpætənt/", "meaning": "bằng sáng chế"}, {"word": "documentary", "ipa": "/ˌdɑːkjəˈmentəri/", "meaning": "phim tài liệu"}, {"word": "village", "ipa": "/ˈvɪlɪdʒ/", "meaning": "làng"}, {"word": "reject", "ipa": "/rɪˈdʒekt/", "meaning": "từ chối; bác bỏ"}, {"word": "rejection", "ipa": "/rɪˈdʒekʃən/", "meaning": "sự bác bỏ; người bị loại"}, {"word": "expose", "ipa": "/ɪkˈspoʊz/", "meaning": "phơi bày; tiết lộ"}, {"word": "mentality", "ipa": "/menˈtæləti/", "meaning": "tâm lý; tư duy"}, {"word": "resume", "ipa": "/rɪˈzuːm/", "meaning": "tiếp tục"}, {"word": "résumé", "ipa": "/ˈrezəmeɪ/", "meaning": "sơ yếu lý lịch"}, {"word": "experience", "ipa": "/ɪkˈspɪəriəns/", "meaning": "kinh nghiệm"}, {"word": "insurance", "ipa": "/ɪnˈʃʊrəns/", "meaning": "bảo hiểm"}, {"word": "publication", "ipa": "/ˌpʌblɪˈkeɪʃən/", "meaning": "sự xuất bản; ấn phẩm"}, {"word": "essential", "ipa": "/ɪˈsenʃəl/", "meaning": "quan trọng; thiết yếu"}, {"word": "rapidly", "ipa": "/ˈræpɪdli/", "meaning": "nhanh chóng"}, {"word": "environment", "ipa": "/ɪnˈvaɪrənmənt/", "meaning": "môi trường"}, {"word": "technology", "ipa": "/tekˈnɑːlədʒi/", "meaning": "công nghệ"}, {"word": "explain", "ipa": "/ɪkˈspleɪn/", "meaning": "giải thích"}, {"word": "smooth", "ipa": "/smuːð/", "meaning": "mượt mà; trơn tru"}, {"word": "operate", "ipa": "/ˈɑːpəreɪt/", "meaning": "vận hành; hoạt động"}, {"word": "mindset", "ipa": "/ˈmaɪndset/", "meaning": "tư duy"}, {"word": "forward", "ipa": "/ˈfɔːrwərd/", "meaning": "về phía trước"}, {"word": "individual", "ipa": "/ˌɪndɪˈvɪdʒuəl/", "meaning": "cá nhân"}, {"word": "embrace", "ipa": "/ɪmˈbreɪs/", "meaning": "ôm; chấp nhận; đón nhận"}, {"word": "challenge", "ipa": "/ˈtʃælɪndʒ/", "meaning": "thử thách"}, {"word": "failure", "ipa": "/ˈfeɪljər/", "meaning": "sự thất bại"}, {"word": "detailed", "ipa": "/ˈdiːteɪld/", "meaning": "chi tiết; tỉ mỉ"}, {"word": "in advance", "ipa": "/ɪn ədˈvæns/", "meaning": "trước; sớm"}, {"word": "itinerary", "ipa": "/aɪˈtɪnəreri/", "meaning": "lịch trình; hành trình"}, {"word": "selfie", "ipa": "/ˈselfi/", "meaning": "ảnh chụp tự sướng"}, {"word": "journalist", "ipa": "/ˈdʒɜːrnəlɪst/", "meaning": "nhà báo; phóng viên"}, {"word": "candidate", "ipa": "/ˈkændɪdeɪt/", "meaning": "ứng viên; thí sinh"}, {"word": "skill", "ipa": "/skɪl/", "meaning": "kỹ năng"}, {"word": "interpersonal", "ipa": "/ˌɪntərˈpɜːrsənəl/", "meaning": "giữa các cá nhân"}, {"word": "performance", "ipa": "/pərˈfɔːrməns/", "meaning": "buổi biểu diễn; hiệu suất"}, {"word": "customer", "ipa": "/ˈkʌstəmər/", "meaning": "khách hàng"}, {"word": "preference", "ipa": "/ˈprefərəns/", "meaning": "sự ưa thích; sở thích"}, {"word": "unfamiliar", "ipa": "/ˌʌnfəˈmɪliər/", "meaning": "không quen thuộc"}, {"word": "organised", "ipa": "/ˈɔːrɡənaɪzd/", "meaning": "có tổ chức; ngăn nắp"}, {"word": "exchange", "ipa": "/ɪksˈtʃeɪndʒ/", "meaning": "trao đổi"}, {"word": "farewell", "ipa": "/ˌferˈwel/", "meaning": "lời chào tạm biệt"}, {"word": "smart", "ipa": "/smɑːrt/", "meaning": "thông minh"}, {"word": "anxious", "ipa": "/ˈæŋkʃəs/", "meaning": "lo lắng"}, {"word": "company", "ipa": "/ˈkʌmpəni/", "meaning": "công ty"}, {"word": "environmental", "ipa": "/ɪnˌvaɪrənˈmentəl/", "meaning": "thuộc về môi trường"}, {"word": "footprint", "ipa": "/ˈfʊtprɪnt/", "meaning": "dấu chân; dấu ấn (tác động)"}, {"word": "conservation", "ipa": "/ˌkɑːnsərˈveɪʃən/", "meaning": "sự bảo tồn"}, {"word": "family", "ipa": "/ˈfæməli/", "meaning": "gia đình"}, {"word": "achieve", "ipa": "/əˈtʃiːv/", "meaning": "đạt được"}, {"word": "success", "ipa": "/səkˈses/", "meaning": "thành công"}, {"word": "continuous", "ipa": "/kənˈtɪnjuəs/", "meaning": "liên tục"}, {"word": "acquire", "ipa": "/əˈkwaɪər/", "meaning": "đạt được; thu được"}, {"word": "design", "ipa": "/dɪˈzaɪn/", "meaning": "thiết kế"}, {"word": "mimic", "ipa": "/ˈmɪmɪk/", "meaning": "bắt chước"}, {"word": "behaviour", "ipa": "/bɪˈheɪvjər/", "meaning": "hành vi"}, {"word": "appearance", "ipa": "/əˈpɪrəns/", "meaning": "ngoại hình; sự xuất hiện"}];
+let deck=[], index=0, score=0, answered=false;
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function speak(){
+  const text=document.getElementById('word').textContent;
+  if(!text || text==='—') return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US'; u.rate=.82; u.pitch=1;
+  speechSynthesis.speak(u);
+}
+document.getElementById('speakBtn').onclick=speak;
+
+function start(){
+  deck=shuffle(BANK); index=0; score=0;
+  document.getElementById('quiz').style.display='block';
+  document.getElementById('finish').style.display='none';
+  render();
+}
+function render(){
+  answered=false;
+  const item=deck[index];
+  document.getElementById('progressText').textContent=`Câu ${index+1} / ${deck.length}`;
+  document.getElementById('score').textContent=score;
+  document.getElementById('bar').style.width=((index)/deck.length*100)+'%';
+  document.getElementById('word').textContent=item.word;
+  document.getElementById('result').style.display='none';
+  document.getElementById('next').disabled=true;
+  const choices=shuffle([item.meaning,...shuffle(BANK.filter(x=>x.word!==item.word)).slice(0,3).map(x=>x.meaning)]);
+  const box=document.getElementById('answers'); box.innerHTML='';
+  choices.forEach((c,n)=>{
+    const b=document.createElement('button'); b.className='answer'; b.textContent=`${String.fromCharCode(65+n)}. ${c}`;
+    b.onclick=()=>choose(b,c,item); box.appendChild(b);
+  });
+}
+function choose(btn,choice,item){
+  if(answered)return; answered=true;
+  const correct=choice===item.meaning;
+  if(correct){score++;btn.classList.add('correct')} else {
+    btn.classList.add('wrong');
+    [...document.querySelectorAll('.answer')].find(x=>x.textContent===`A. ${item.meaning}`||x.textContent===`B. ${item.meaning}`||x.textContent===`C. ${item.meaning}`||x.textContent===`D. ${item.meaning}`)?.classList.add('correct');
+  }
+  document.querySelectorAll('.answer').forEach(x=>x.disabled=true);
+  document.getElementById('ipa').textContent=item.ipa;
+  document.getElementById('meaning').textContent='Nghĩa: '+item.meaning;
+  document.getElementById('result').style.display='block';
+  document.getElementById('next').disabled=false;
+  document.getElementById('score').textContent=score;
+}
+document.getElementById('next').onclick=()=>{
+  if(index<deck.length-1){index++;render()}
+  else finish()
+};
+function finish(){
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('finish').style.display='block';
+  document.getElementById('bar').style.width='100%';
+  document.getElementById('finalScore').textContent=`${score}/${deck.length}`;
+  const p=score/deck.length;
+  document.getElementById('finalText').textContent=p>=.8?'Rất tốt! 🔥':p>=.6?'Khá ổn, ôn lại các từ sai nhé!':'Hãy làm lại thêm một lượt để nhớ chắc hơn nhé!';
+}
+document.getElementById('restart').onclick=start;
+start();
+</script>
+</body>
+</html>
